@@ -32,7 +32,10 @@ const NewForm = () => {
             })
 
             if(response.ok){
-                
+                const data = await response.json();
+                console.log("data saved: ",data);
+            }else{
+                console.error("failed to save")
             }
         }catch(err){
             console.error("error in posting: ",err);
@@ -65,15 +68,22 @@ const NewForm = () => {
              />
         </div>
         <div>
-            <p>Content</p>
-            <input type="text" 
-            name='Content'
-            value={formData.Content}
-            onChange={handleChange}/>
-        </div>
+  <p>Content</p>
+  <textarea 
+    name='Content'
+    value={formData.Content}
+    onChange={handleChange}
+    rows="5" // Adjust rows for vertical size
+    className="w-full p-2 border border-gray-300 rounded-md" // Tailwind for width and styling
+  />
+</div>
+
         <div>
             <p>Author</p>
-            <input type="text" />
+            <input type="text" 
+             name='Author'
+             value={formData.Author}
+             onChange={handleChange}/>
         </div>
         <div>
             <p>Date</p>

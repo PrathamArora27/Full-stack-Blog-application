@@ -37,7 +37,25 @@ const server = http.createServer(async(req,res)=>{
         }
     }
     else if(req.method=== 'POST' && parsedUrl.pathname === '/blogposts'){
+        let body = '';
+        req.on('data',chunk=>{
+            body+=chunk.toString(); // to deal with the buffer data
+        })
         
+        req.on('end',async()=>{
+            try{
+                const data = JSON.parse(body);
+                const newPost = new BlogPost(data);
+                console.log(newPost);
+                const savedPost = await newPost.save();
+                res.writeHead(201,{ 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(savedPost));
+            }catch(err){
+                console.error("error is : ",err);
+                res.writeHead(400, { 'Content-Type': 'text/plain' });
+                res.end('Invalid request');
+            }
+        })
     }
     
 
