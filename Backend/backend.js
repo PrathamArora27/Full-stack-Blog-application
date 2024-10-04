@@ -2,6 +2,8 @@ const http = require('http');
 const mongoose = require('mongoose');
 const BlogPost = require('./models/postModel')
 const url = require('url');
+const fs = require('fs'); 
+const path = require('path'); 
 
 
 const PORT = 3000;
@@ -57,6 +59,46 @@ const server = http.createServer(async(req,res)=>{
             }
         })
     }
+    else if (req.method === 'GET' && parsedUrl.pathname.startsWith('/download/')) {
+        const blogID = parsedUrl.pathname.split('/')[2];
+    
+        try {
+            const blogpost = await BlogPost.findById(blogID);
+    
+            if (!blogpost) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Blog post not found' })); // Send JSON response
+                return;
+            }
+    
+            const content = `Title: ${blogpost.title}\nContent: ${blogpost.Content}\nAuthor: ${blogpost.Author}`;
+            const dirPath = path.join(__dirname, 'downloads'); // Path to the downloads directory
+            const filePath = path.join(dirPath, `${blogpost.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`); // File path
+    
+            // Check and create the downloads directory if it doesn't exist
+            if (!fs.existsSync(dirPath)) {
+                fs.mkdirSync(dirPath, { recursive: true });
+            }
+    
+            // Write the file and respond with a JSON object
+            fs.writeFile(filePath, content, (err) => {
+                if (err) {
+                    console.error(err);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Internal Server Error' })); // Send JSON response
+                    return;
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ message: 'File created successfully' })); // Send JSON response
+            });
+    
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal Server Error' })); // Send JSON response
+        }
+    }
+    
     
 
 })
